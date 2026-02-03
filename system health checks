@@ -1,0 +1,41 @@
+#System Health Check 
+#!/bin/bash 
+echo "CPU Load:"; uptime 
+echo -e "\nMemory Usage:"; free -m 
+echo -e "\nDisk Usage:"; df -h 
+echo -e "\nTop 5 Memory Consuming Processes:"; ps aux --sort=-%mem | head -n 6
+
+
+#Service Restart on Failure
+#!/bin/bash 
+SERVICE="nginx" 
+if ! systemctl is-active --quiet $SERVICE; then 
+echo "$SERVICE is down. Restarting..." 
+systemctl start $SERVICE 
+else 
+echo "$SERVICE is running"
+fi
+
+#Log Rotation Script 
+#!/bin/bash 
+LOG_DIR="/var/log/myapp" 
+ARCHIVE_DIR="/var/log/myapp/archive" 
+mkdir -p $ARCHIVE_DIR 
+find $LOG_DIR/*.log -mtime +7 -exec mv {} $ARCHIVE_DIR \; 
+gzip $ARCHIVE_DIR/*.log
+
+# Monitor CPU Usage and Send Alert 
+#!/bin/bash 
+THRESHOLD=80 
+CPU_LOAD=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}') 
+if (( $(echo "$CPU_LOAD > $THRESHOLD" | bc -l) )); then 
+echo "High CPU Load: $CPU_LOAD%" | mail -s "Alert: CPU Load" 
+admin@example.com 
+fi 
+
+  
+
+
+
+
+
